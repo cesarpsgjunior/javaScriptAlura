@@ -1,3 +1,5 @@
+import chalk from "chalk";
+
 function extraiLinks(arrLinks){
     return arrLinks.map((objetoLink) => Object.values(objetoLink).join())
 }
@@ -6,17 +8,38 @@ function extraiLinks(arrLinks){
     const arrStatus = await Promise
     .all(
         listaURLs.map(async (url) => {
-            const response = await fetch(url)
-            return response.status;
+            try{
+                const response = await fetch(url)
+                return response.status;
+
+            } catch (erro) {
+                return manejaErro(erro);
+            }
     })
     )
     return arrStatus;
 }
 
+function manejaErro(erro){
+    if(erro.cause.code === 'ENOTFOUND'){
+        return 'Link não encontrado';
+    } else {
+        return 'Ocorreu algum erro';
+    }
+    
+    //console.log(chalk.red('algo deu errado'), erro);
+}
+
 export default async function listaValidada(listaDeLinks) {
     const links = extraiLinks(listaDeLinks);
     const status = await checaStatus(links);
-    return status
+
+    return listaDeLinks.map((objeto, indice) => ({
+        ...objeto,
+        status: status[indice]
+    }))
+
+    //return status
 }
 
 // const res = await fetch('https://Nome do site.org');
@@ -24,5 +47,3 @@ export default async function listaValidada(listaDeLinks) {
 //     const data = await res.json();
 //     console.log(data);
 // }
-
-//[gatinho salsicha](http://gatinhosalsicha.com.br/)
